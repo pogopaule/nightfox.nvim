@@ -2,7 +2,7 @@ local template = require("nightfox.util.template")
 
 local M = {}
 
-function M.generate(spec)
+function M.generate(spec, _)
   local content = [[
 # Nightfox colors for Kitty
 ## name: ${palette.meta.name}
@@ -12,6 +12,7 @@ background ${bg1}
 foreground ${fg1}
 selection_background ${sel0}
 selection_foreground ${fg1}
+cursor_text_color ${bg1}
 url_color ${palette.green}
 
 # Cursor

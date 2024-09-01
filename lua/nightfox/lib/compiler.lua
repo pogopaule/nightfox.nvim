@@ -30,7 +30,8 @@ function M.compile(opts)
   local lines = {
     fmt(
       [[
-require("nightfox").compiled = string.dump(function()
+return string.dump(function()
+local h = vim.api.nvim_set_hl
 if vim.g.colors_name then vim.cmd("hi clear") end
 vim.o.termguicolors = true
 vim.g.colors_name = "%s"
@@ -50,13 +51,13 @@ vim.o.background = "%s"
 
   for name, values in pairs(groups) do
     if should_link(values.link) then
-      table.insert(lines, fmt([[vim.api.nvim_set_hl(0, "%s", { link = "%s" })]], name, values.link))
+      table.insert(lines, fmt([[h(0, "%s", { link = "%s" })]], name, values.link))
     else
       local op = parse_styles(values.style)
       op.bg = values.bg
       op.fg = values.fg
       op.sp = values.sp
-      table.insert(lines, fmt([[vim.api.nvim_set_hl(0, "%s", %s)]], name, inspect(op)))
+      table.insert(lines, fmt([[h(0, "%s", %s)]], name, inspect(op)))
     end
   end
 
@@ -66,14 +67,27 @@ vim.o.background = "%s"
   local output_path, output_file = config.get_compiled_info(opts)
   util.ensure_dir(output_path)
 
-  local file
+  local file, err
   if vim.g.nightfox_debug then
     file = io.open(output_file .. ".lua", "wb")
     file:write(table.concat(lines, "\n"))
     file:close()
   end
 
-  file = io.open(output_file, "wb")
+  file, err = io.open(output_file, "wb")
+  if not file then
+    require("nightfox.lib.log").error(fmt(
+      [[Couldn't open %s: %s.
+
+Check that %s is accessible for the current user.
+You could try deleting %s to reset permissions]],
+      output_file,
+      err,
+      output_file,
+      output_path
+    ))
+    return
+  end
 
   local f = loadstring(table.concat(lines, "\n"), "=")
   if not f then
@@ -94,8 +108,7 @@ Bellow is the error message:
     dofile(tmpfile)
   end
 
-  f()
-  file:write(require("nightfox").compiled)
+  file:write(f())
   file:close()
 end
 

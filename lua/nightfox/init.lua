@@ -41,10 +41,15 @@ end
 
 -- Avold g:colors_name reloading
 local lock = false
+local did_setup = false
 
 function M.load(opts)
   if lock then
     return
+  end
+
+  if not did_setup then
+    M.setup()
   end
 
   opts = opts or {}
@@ -58,12 +63,14 @@ function M.load(opts)
     f = loadfile(compiled_file)
   end
 
+  ---@diagnostic disable-next-line: need-check-nil
   f()
 
   lock = false
 end
 
 function M.setup(opts)
+  did_setup = true
   opts = opts or {}
 
   local override = require("nightfox.override")
@@ -90,7 +97,7 @@ function M.setup(opts)
   local cached_path = util.join_paths(config.options.compile_path, "cache")
   local cached = read_file(cached_path)
 
-  local git_path = util.join_paths(debug.getinfo(1).source:sub(2, -23), ".git", "ORIG_HEAD")
+  local git_path = util.join_paths(debug.getinfo(1).source:sub(2, -23), ".git")
   local git = vim.fn.getftime(git_path)
   local hash = require("nightfox.lib.hash")(opts) .. (git == -1 and git_path or git)
 

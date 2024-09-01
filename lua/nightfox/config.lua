@@ -10,6 +10,15 @@ local defaults = {
   terminal_colors = true,
   dim_inactive = false,
   module_default = true,
+  colorblind = {
+    enable = false,
+    simulate_only = false,
+    severity = {
+      protan = 0,
+      deutan = 0,
+      tritan = 0,
+    },
+  },
   styles = {
     comments = "NONE",
     conditionals = "NONE",
@@ -18,6 +27,7 @@ local defaults = {
     keywords = "NONE",
     numbers = "NONE",
     operators = "NONE",
+    preprocs = "NONE",
     strings = "NONE",
     types = "NONE",
     variables = "NONE",
@@ -42,12 +52,17 @@ local defaults = {
       background = true,
     },
     treesitter = util.is_nvim,
+    lsp_semantic_tokens = util.is_nvim,
+    leap = {
+      background = true,
+    },
   },
 }
 
 M.options = collect.deep_copy(defaults)
 
 M.module_names = {
+  "alpha",
   "aerial",
   "barbar",
   "cmp",
@@ -62,8 +77,12 @@ M.module_names = {
   "glyph_palette",
   "hop",
   "illuminate",
+  "indent_blankline",
+  "lazy",
+  "leap",
   "lightspeed",
   "lsp_saga",
+  "lsp_semantic_tokens",
   "lsp_trouble",
   "mini",
   "modes",

@@ -168,35 +168,35 @@ require('nightfox').setup({ specs = specs, groups = groups })
 
 ## Option
 
-#### compile_path {path}
+#### options.compile_path {path}
 
 The output directory {path} where the compiled results will be written to. Default:
 `vim.fn.stdpath("cache")/nightfox`.
 
-#### compile_file_suffix {suffix}
+#### options.compile_file_suffix {suffix}
 
 The string appended to the compiled file. Each `style` outputs to its own file. These files will append the {suffix} to
 the end of the file. Default: `_compiled`
 
-#### transparent {bool}
+#### options.transparent {bool}
 
 A boolean value that if set will disable setting the background of `Normal`, `NormalNC` and other highlight groups. This
 lets you use the colors of the colorscheme but use the background of your terminal. Default: `false`.
 
-#### terminal_colors {bool}
+#### options.terminal_colors {bool}
 
 A boolean value that if set will define the terminal colors for the builtin `terminal` (vim.g.terminal*color*\*).
 Default: `true`.
 
-#### dim_inactive {bool}
+#### options.dim_inactive {bool}
 
 A boolean value that if set will set the background of Non current windows to be darker. See `:h hl-NormalNC`.
 
-#### module_default {bool}
+#### options.module_default {bool}
 
 The default value of a module that has not been overridden in the modules table.
 
-#### styles {table}
+#### options.styles {table}
 
 `styles` is a table that contains a list of syntax components and their corresponding style. These styles can be any
 combination of |highlight-args|. The list of syntax components are:
@@ -208,6 +208,7 @@ combination of |highlight-args|. The list of syntax components are:
 - keywords
 - numbers
 - operators
+- preprocs
 - strings
 - types
 - variables
@@ -223,14 +224,31 @@ local options = {
 }
 ```
 
-#### inverse {table}
+#### options.inverse {table}
 
 `inverse` is a table that contains a list of highlight types. If a highlight type is enabled it will inverse the
 foreground and background colors instead of applying the normal highlight group. Thees highlight types are:
 `match_paren`, `visual`, `search`. For an example if search is enabled instead of highlighting a search term with the
-default search color it will inverse the foureground and background colors.
+default search color it will inverse the foreground and background colors.
 
-#### modules {table}
+#### options.colorblind {table}
+
+`colorblind` stores configuration information for nightfox's `color vision deficiency` (cdv) mode. This contains the
+following table:
+
+```lua
+colorblind = {
+  enable = false,        -- Enable colorblind support
+  simulate_only = false, -- Only show simulated colorblind colors and not diff shifted
+  severity = {
+    protan = 0,          -- Severity [0,1] for protan (red)
+    deutan = 0,          -- Severity [0,1] for deutan (green)
+    tritan = 0,          -- Severity [0,1] for tritan (blue)
+  },
+},
+```
+
+#### options.modules {table}
 
 `modules` store configuration information for various plugins and other neovim modules. A module can either be a boolean
 or a table that contains additional configuration for that module. If the value is a table it also has a field called
@@ -330,12 +348,12 @@ The `syntax` table maps [palette] color values to syntax values to be used by th
 #### spec.diag
 
 The `diag` table maps [palette] colors to vim diagnostic colors values.
-These values are: `error`, `warn`, `info` and `hint`.
+These values are: `error`, `warn`, `info`, `hint`, and `ok`.
 
 #### spec.diag_bg
 
 The `diag_bg` table maps [palette] colors to vim diagnostic background colors.
-These values are: `error`, `warn`, `info` and `hint`.
+These values are: `error`, `warn`, `info`, `hint`, and `ok`.
 
 #### spec.diff
 
@@ -372,6 +390,7 @@ to determine if the module is applied.
 
 Current list of modules are:
 
+- alpha
 - aerial
 - barbar
 - cmp
@@ -386,6 +405,9 @@ Current list of modules are:
 - glyph_palette
 - hop
 - illuminate
+- indent_blanklines
+- lazy.nvim
+- leap
 - lightspeed
 - lsp_saga
 - lsp_trouble
@@ -442,6 +464,14 @@ This module sets highlight groups from neovim's builtin `lsp`.
 | ---------- | ------- | ------- | --------------------------------- |
 | enable     | boolean | `true`  | Enable the module to be included  |
 | background | boolean | `true`  | Set virtual text background color |
+
+#### modules.leap
+
+| key        | type    | default | description                            |
+| ---------- | ------- | ------- | -------------------------------------- |
+| enable     | boolean | `true`  | Enable the module to be included       |
+| background | boolean | `true`  | Sets the label color to the background |
+| harsh      | boolean | `false` | Sets label's contrast to be harsher    |
 
 ## Color
 
@@ -530,6 +560,38 @@ or less saturated version depending of +/- v. {value} is Float [-100, 100].
 
 Returns a new `Color` with {value} added to the `hue` (`hsv`) of the current color. The resulting value of `hue` will be
 wrapped from `[0,360]`, meaning that if the value exceeds `360` it will be wrapped back to `0`.
+
+## Colorblind
+
+For individuals with `color vision deficiency` (cvd), nightfox has implemented a `colorblind` mode to help enhance color
+contrast. This can be enabled with this option `colorblind.enable`.
+
+There are three types of `color vision deficiency` (cvd)
+
+| Cone      | Type   | Weak (trichromacy) | Missing (Dichromacy) |
+| --------- | ------ | ------------------ | -------------------- |
+| L / Red   | Protan | Protanomaly        | Protanopia           |
+| M / Green | Deutan | Deuteranomaly      | Deuteranopia         |
+| S / Blue  | Tritan | Tritanomaly        | Tritanopia           |
+
+The severity of `protan`, `deutan`, and `tritan` can be set individually. Severity is a value ranging from `0` to `1`.
+where `1` is full `dichromacy` (missing cone type).
+
+**Example:**
+
+```lua
+require("nightfox").setup({
+  options = {
+    colorblind = {
+      enable = true,
+      severity = {
+        protan = 0.3,
+        deutan = 0.6,
+      },
+    },
+  },
+})
+```
 
 ## Compile
 
